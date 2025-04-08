@@ -33,13 +33,15 @@ from adaptive_framework.utility.sparse_mask_init import generate_sparse_mask_tor
 
 class BA_Linear(nn.Linear):
     def __init__(
-        self, in_features: int, out_features: int,
-        next_act: Callable[[to.Tensor], to.Tensor],
+        self, in_features: int,
+        out_features: int,
         eps: float = 0.5,
         start_active_neuron_ratio: float = 0.5,
         bias: bool = True,
+        next_act: Callable[[to.Tensor], to.Tensor] = None,
         device: str = "cuda"
     ) -> None:
+
         super().__init__(
             in_features=in_features,
             out_features=out_features,
@@ -57,8 +59,10 @@ class BA_Linear(nn.Linear):
             requires_grad=False
         )
 
-        self.eps: nn.Parameter = nn.Parameter(data=to.tensor(eps), requires_grad=True)
+        next_act = next_act if next_act is not None else lambda x: x
         self.next_act: Callable[[to.Tensor], to.Tensor] = next_act
+
+        self.eps: nn.Parameter = nn.Parameter(data=to.tensor(eps), requires_grad=True)
 
     def forward(self, x: to.Tensor) -> to.Tensor:
         new_weights: to.Tensor = self.adaptive_mask_prod * self.weight
