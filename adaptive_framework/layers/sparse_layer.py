@@ -3,35 +3,46 @@ import torch as to
 from typing import Callable
 from adaptive_framework.utility.sparse_mask_init import generate_sparse_mask_torch
 
-"""
-    Brain Adaptive Linear class represent a dynamic way of including weight creation and 
-    weight removal throughout the training of a network. The assumption behind this technique is 
-    to emulate the rewiring process of the brain when a new set of information is learnt. 
-    The logic behind when two neurons should link or split apart depends on the neurons output itself, 
-    if two neurons share similar activation, post non linearity, they should connect, if not already, 
-    otherwise the edge should be removed. The threshold \epsilon representing the maximum distance
-    within which two neurons should connect is directly learnt from the model by actively including 
-    \epsilon within the forward pass of this layer. 
-    BA_Linear has:
-        a) two learnable parameters: 
-            - Matrix W of size in_features x out_features
-            - Real value \epsilon 
-        b) one non learnable parameter: 
-            - 0-1 Matrix M of size in_features x out_features
-    
-    The forward pass first zero's the non-existing connection for the weight matrix W by performing
-    element-wise multiplication with the mask M. The result \hat{W} and the input matrix X are multiplied 
-    and summed with, if existing, the bias. The result is then weighted with the threshold \epsilon, 
-    and returned. The received matrix X, which represents the output (post non-linearity) of the 
-    previous layer neurons, is used to compare the distance of each neuron, hence assuming that the number 
-    of related neurons in the intput matrix X is exactly in_features and the number of neurons in the 
-    new layer is out_features. The resulting comparison matrix N of size in_features x out_features
-    where at position i,j represent the distance between the neuron i and the neuron j after the activation. 
-    The logic behind the forward pass multiplication with the parameter \epsilon is that the stricter the neurons
-    threshold the more relevant the already existing connection should be.
-"""
 
 class BA_Linear(nn.Linear):
+    """
+        A modified Linear layer with a fixed adaptive mask and a customizable activation function.
+        This layer supports sparsity by using a non-trainable adaptive mask over the weight matrix and
+        allows a custom post-layer activation.
+
+        Parameters
+        ----------
+        in_features : int
+            Expected size of the last dimension input tensor.
+        out_features : int
+            Desired size of the last dimension output tensor.
+        eps : float, optional (default=0.5)
+            A learnable scalar parameter representing the maximal distance two neurons can have in order to
+            be incident (connected).
+        start_active_neuron_ratio : float, optional (default=0.5)
+            Proportion of initially active (non-zero) connections in the sparse layer.
+        bias : bool, optional (default=True)
+            If set to False, the layer will not learn an additive bias.
+        next_act : Callable[[torch.Tensor], torch.Tensor], optional
+            A function representing the activation to be applied after the linear transformation. Defaults to identity.
+        device : str, optional (default='cuda')
+            The device on which the parameters and computations will be allocated.
+
+        Attributes
+        ----------
+        adaptive_mask_prod : torch.nn.Parameter
+            A fixed sparse mask (not trainable) used to control which weights are active.
+        next_act : Callable
+            The activation function to apply after the linear transformation in order to
+            check the distance between two neurons activations.
+        eps : torch.nn.Parameter
+            A learnable scalar parameter initialized with `eps`.
+
+        Notes
+        -----
+        The sparse mask is generated once during initialization using `generate_sparse_mask_torch`
+        and update deterministically throughout the training given the parameter `eps`.
+    """
     def __init__(
         self, in_features: int,
         out_features: int,
