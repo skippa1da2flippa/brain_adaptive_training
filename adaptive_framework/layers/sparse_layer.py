@@ -6,9 +6,9 @@ from adaptive_framework.utility.sparse_mask_init import generate_sparse_mask_tor
 
 class BA_Linear(nn.Linear):
     """
-        A modified Linear layer with a fixed adaptive mask and a customizable activation function.
-        This layer supports sparsity by using a non-trainable adaptive mask over the weight matrix and
-        allows a custom post-layer activation.
+        Implementation of a dynamic fully connected layer updating its topology throughout
+        the training. The connection are generated (unmasked) or pruned (masked) according to
+        the similarity between the neurons, which is measured with a learnable parameter.
 
         Parameters
         ----------
