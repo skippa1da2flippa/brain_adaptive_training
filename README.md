@@ -51,7 +51,35 @@ lays in the empirical path conditioned by the chosen datasets.
 
 $$
 \begin{align}
-\tilde{X} &= \text{AVG}(X)\big{|}_{[1, \dots, 1 + k]} \in \mathbb{R}^{\text{in_features}}\\
-\tilde{M} &= \text{AVG}(\text{BA}_{\text{linear}}(X))\big{|}_{[1, \dots, 1 + k]} \in \mathbb{R}^{\text{out_features}} \\
+\tilde{x} &= \text{AVG}\{X\}\big{|}_{[1, \dots, 1 + k]} \in \mathbb{R}^{\text{in_features}}\\
+\tilde{m} &= \text{AVG}\{\phi[\text{BA}_{\text{linear}}(X)]\}\big{|}_{[1, \dots, 1 + k]} \in \mathbb{R}^{\text{out_features}} \\
 \end{align}
 $$
+
+The neurons output in the $h$-th layer $X$ is averaged through all the dimensions beside the last one, resulting in a 
+one dimensional tensor, same process is applied onto the neurons output of the $h+1$-th layer. The application
+of the non-linearity $\phi$ is only needed if the **BA** layer is not set as first layer of the network.
+
+$$
+\begin{align}
+\tilde{D} &= \begin{pmatrix}
+|\tilde{x}_{1} - \tilde{m}_{1}| & \dots & |\tilde{x}_{1} - \tilde{m}_{\text{out_features}}| \\
+\vdots & \ddots & \dots \\
+|\tilde{x}_{\text{in_features}} - \tilde{m}_{1}| & \dots & |\tilde{x}_{\text{in_features}} - \tilde{m}_{\text{out_features}}|
+\end{pmatrix} \in \mathbb{R}^{\text{in_features} \times \text{out_features}} \\ \\
+m_{ij} &= \begin{cases}
+1 & \text{If } \tilde{d}_{ij} \leq \epsilon \\
+0 & \text{otherwise}
+\end{cases}
+\end{align}
+$$
+
+
+
+## Complete framework
+
+On initialization the layer is randomly initialized as explained in `Mask Random Initialization`, then at each 
+forward pass, if the gradient computation is enabled, before returning the forward pass value the update 
+routine is run.
+
+
