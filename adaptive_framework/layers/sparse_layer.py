@@ -7,8 +7,8 @@ from adaptive_framework.utility.sparse_mask_init import generate_sparse_mask_tor
 class BA_Linear(nn.Linear):
     """
         Implementation of a dynamic fully connected layer updating its topology throughout
-        the training. The connection are generated (unmasked) or pruned (masked) according to
-        the similarity between the neurons, which is measured with a learnable parameter.
+        the training. The connections are generated (unmasked) or pruned (masked) according to
+        the similarity between the neurons, such value is measured with a learnable parameter.
 
         Parameters
         ----------
