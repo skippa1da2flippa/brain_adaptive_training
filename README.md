@@ -82,4 +82,13 @@ On initialization the layer is randomly initialized as explained in `Mask Random
 forward pass, if the gradient computation is enabled, before returning the forward pass value the update 
 routine is run.
 
+1. $\text{Initialize parameters: } W, M, b, \epsilon$
+2. $\text{For any forward pass with input: } X$ 
+   1. $out \leftarrow X\left[\frac{1}{\sqrt{\epsilon}}(M \odot W)\right]^{T} + b$
+   2. $\text{If the gradient computation is allowed: }$
+      1. $\text{Update mask}$
+   3. $\text{Return } out$
+
+
+
 
