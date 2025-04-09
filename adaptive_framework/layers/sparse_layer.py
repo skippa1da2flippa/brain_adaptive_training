@@ -65,18 +65,25 @@ class BA_Linear(nn.Linear):
         self.eps: nn.Parameter = nn.Parameter(data=to.tensor(eps), requires_grad=True)
 
     def forward(self, x: to.Tensor) -> to.Tensor:
-        new_weights: to.Tensor = self.adaptive_mask_prod * self.weight
-        new_out: to.Tensor = to.sqrt(1 / self.eps) * (x @ new_weights.T + self.bias)
+        new_weights: to.Tensor = to.sqrt(1 / self.eps) * self.adaptive_mask_prod * self.weight
+        new_out: to.Tensor =  x @ new_weights.T + self.bias
         self.update_masks(neurons_in=x, neurons_out=new_out)
 
         return new_out
 
     def update_masks(self, neurons_in: to.Tensor, neurons_out: to.Tensor) -> None:
         if to.is_grad_enabled():
-            # TODO this thing with the assumption of having a 4 dimensional tensor otherwise just three
-            batch_averaged_in: to.Tensor = to.mean(input=neurons_in, dim=[0, 1])  # vector of size in_features
-            batch_averaged_out: to.Tensor = self.next_act(to.mean(input=neurons_out, dim=[0, 1])) # vector of size out_features
+            batch_averaged_in: to.Tensor = to.mean(
+                input=neurons_in,
+                dim=[x for x in range(neurons_in.dim() - 1)]
+            )  # vector of size in_features
 
+            batch_averaged_out: to.Tensor = to.mean(
+                input=self.next_act(neurons_out),
+                dim=[x for x in range(neurons_out.dim() - 1)]
+            ) # vector of size out_features
+
+            # TODO add a choosable distance metric like cosine sim also
             raw_distance_score: to.Tensor = batch_averaged_in.reshape(-1, 1) - batch_averaged_out.reshape(1, -1)
             neurons_distance_mat: to.Tensor = to.abs(raw_distance_score) # matrix of size in_features x out_features
 
