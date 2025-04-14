@@ -91,6 +91,26 @@ routine is run.
       1. $\text{Update mask}$
    3. $\text{Return } out$
 
+## Testing
+
+**BA** layer will be tested with different architecture, by replacing the dense layers of a CNN as 
+*Alex Net*, or swapping the **BA** layer with the linear ones before the message passing mechanism 
+in GNN-based network, and inside the *Transformer* block both inside the attention mechanism and in 
+the fully connected layers. The modified models will be employed in at least one of the following
+tasks: 
+
+1. Image classification
+   1. CNN
+   2. Transformer 
+
+2. Link prediction 
+   1. GNN
+   2. Transformer 
+
+3. Node classification
+   1. GNN
+   2. Transformer
+
 
 
 
