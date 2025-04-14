@@ -4,9 +4,9 @@
 weight removal throughout the training of a network. The assumption behind this technique is 
 to emulate the rewiring process of the brain when a new set of information is learnt. 
 The logic behind when two neurons should link or split apart depends on the neurons output itself, 
-if two neurons share similar activation, post non linearity, they should connect, if not already, 
+if two neurons share similar activation, post non-linearity, they should connect, if not already, 
 otherwise the edge should be removed. The threshold $\epsilon$ representing the maximum distance
-within which two neurons should connect is directly learnt from the model by actively including 
+,within which two neurons should connect, is directly learnt from the model by actively including 
 $\epsilon$  within the forward pass of this layer. 
 
 $$
@@ -24,9 +24,10 @@ last ones.
 
 ## Mask random initialization
 
-The tensor $M$ is randomly initialized with either zero constraining each row to have at least a cell 
+The tensor $M$ is randomly initialized with either zero or one while constraining each row to have at least a cell 
 set to one. In other words each neuron in the newly create layer $h + 1$ has at least one connection 
 with at least one neuron in the previous layer $h$.
+The learnable parameters $W$ and $b$ are initialized according to the *Kaiming weight initialization methods*.
 
 ## Forward pass 
 
@@ -45,7 +46,7 @@ possible activation.
 ## Mask update
 
 The distance between a pair of any two neurons $n_i, n_j$ is computed as absolute difference between 
-the two neurons, even though distance itself might be misleading for some task in which the distance 
+the two neurons activation value, even though distance itself might be misleading for some task in which the distance 
 itself might not be indicative for detecting the similarity between two neurons. As usual the answer
 lays in the empirical path conditioned by the chosen datasets.
 
@@ -58,7 +59,8 @@ $$
 
 The neurons output in the $h$-th layer $X$ is averaged through all the dimensions beside the last one, resulting in a 
 one dimensional tensor, same process is applied onto the neurons output of the $h+1$-th layer. The application
-of the non-linearity $\phi$ is only needed if the **BA** layer is not set as first layer of the network.
+of the non-linearity $\phi$ is only needed if the **BA** layer is set in a context where an activation
+function is placed right after the **BA** layer.
 
 $$
 \begin{align}

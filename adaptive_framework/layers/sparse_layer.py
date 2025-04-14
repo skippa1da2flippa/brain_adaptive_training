@@ -76,7 +76,7 @@ class BA_Linear(nn.Linear):
         self.eps: nn.Parameter = nn.Parameter(data=to.tensor(eps), requires_grad=True)
 
     def forward(self, x: to.Tensor) -> to.Tensor:
-        new_weights: to.Tensor = to.sqrt(1 / self.eps) * self.adaptive_mask_prod * self.weight
+        new_weights: to.Tensor = (1 / to.sqrt(self.eps)) * self.adaptive_mask_prod * self.weight
         new_out: to.Tensor =  x @ new_weights.T + self.bias
         self.update_masks(neurons_in=x, neurons_out=new_out)
 
@@ -98,7 +98,7 @@ class BA_Linear(nn.Linear):
             raw_distance_score: to.Tensor = batch_averaged_in.reshape(-1, 1) - batch_averaged_out.reshape(1, -1)
             neurons_distance_mat: to.Tensor = to.abs(raw_distance_score) # matrix of size in_features x out_features
 
-            batch_activation_mask: to.Tensor = neurons_distance_mat <= self.eps
+            batch_activation_mask: to.Tensor = (neurons_distance_mat <= self.eps).T
             self.adaptive_mask_prod[batch_activation_mask] = 1
             self.adaptive_mask_prod[~batch_activation_mask] = 0
 
